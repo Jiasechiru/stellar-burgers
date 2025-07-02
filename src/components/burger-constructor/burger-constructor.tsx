@@ -2,7 +2,7 @@ import { FC, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from '../../services/store';
 import { TIngredient, TConstructorIngredient } from '../../utils/types';
 import { BurgerConstructorUI } from '@ui';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { placeOrder, clearOrder } from '../../services/orderSlice';
 import { resetConstructor } from '../../services/constructorSlice';
 
@@ -17,6 +17,7 @@ export const BurgerConstructor: FC = () => {
   const orderError = useSelector((state) => state.order.error);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const constructorItems = {
     bun: bun,
@@ -25,7 +26,7 @@ export const BurgerConstructor: FC = () => {
 
   const onOrderClick = () => {
     if (!isAuth) {
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
       return;
     }
     if (!constructorItems.bun || orderRequest) return;

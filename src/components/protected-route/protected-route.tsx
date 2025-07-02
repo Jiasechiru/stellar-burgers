@@ -19,9 +19,6 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   const isPublic = PUBLIC_PATHS.includes(location.pathname);
 
   if (isAuth) {
-    if (isPublic) {
-      return <Navigate to='/' replace />;
-    }
     return <>{children}</>;
   } else {
     if (isPublic) {

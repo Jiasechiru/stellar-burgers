@@ -1,17 +1,41 @@
-import { FC, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import { useSelector } from '../../services/store';
+import { FC, useMemo, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
+import { fetchProfileOrders } from '../../services/profileOrdersSlice';
+import { fetchFeed } from '../../services/feedSlice';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams();
+  const location = useLocation();
+  const dispatch = useDispatch();
   const feedOrders = useSelector((state) => state.feed.orders);
   const profileOrders = useSelector((state) => state.profileOrders.orders);
   const ingredients = useSelector((state) => state.ingredients.items);
   const feedLoading = useSelector((state) => state.feed.loading);
   const profileLoading = useSelector((state) => state.profileOrders.loading);
+
+  useEffect(() => {
+    if (
+      location.pathname.startsWith('/profile/orders/') &&
+      profileOrders.length === 0 &&
+      !profileLoading
+    ) {
+      dispatch(fetchProfileOrders());
+    }
+  }, [location.pathname, profileOrders.length, profileLoading, dispatch]);
+
+  useEffect(() => {
+    if (
+      location.pathname.startsWith('/feed/') &&
+      feedOrders.length === 0 &&
+      !feedLoading
+    ) {
+      dispatch(fetchFeed());
+    }
+  }, [location.pathname, feedOrders.length, feedLoading, dispatch]);
 
   const orderData =
     feedOrders.find((order) => String(order.number) === number) ||

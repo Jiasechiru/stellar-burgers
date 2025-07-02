@@ -1,23 +1,46 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
+import { fetchProfileOrders } from '../../services/profileOrdersSlice';
+import { fetchFeed } from '../../services/feedSlice';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const feedOrders = useSelector((state) => state.feed.orders);
+  const profileOrders = useSelector((state) => state.profileOrders.orders);
+  const ingredients = useSelector((state) => state.ingredients.items);
+  const feedLoading = useSelector((state) => state.feed.loading);
+  const profileLoading = useSelector((state) => state.profileOrders.loading);
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    if (
+      location.pathname.startsWith('/profile/orders/') &&
+      profileOrders.length === 0 &&
+      !profileLoading
+    ) {
+      dispatch(fetchProfileOrders());
+    }
+  }, [location.pathname, profileOrders.length, profileLoading, dispatch]);
 
-  /* Готовим данные для отображения */
+  useEffect(() => {
+    if (
+      location.pathname.startsWith('/feed/') &&
+      feedOrders.length === 0 &&
+      !feedLoading
+    ) {
+      dispatch(fetchFeed());
+    }
+  }, [location.pathname, feedOrders.length, feedLoading, dispatch]);
+
+  const orderData =
+    feedOrders.find((order) => String(order.number) === number) ||
+    profileOrders.find((order) => String(order.number) === number);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -59,7 +82,7 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (feedLoading || profileLoading || !orderInfo) {
     return <Preloader />;
   }
 

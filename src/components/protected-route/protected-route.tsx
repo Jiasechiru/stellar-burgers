@@ -1,6 +1,7 @@
 import { FC, ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from '../../services/store';
+import { Preloader } from '@ui';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -16,7 +17,12 @@ const PUBLIC_PATHS = [
 export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
   const isAuth = useSelector((state) => state.auth.isAuth);
+  const authLoading = useSelector((state) => state.auth.loading);
   const isPublic = PUBLIC_PATHS.includes(location.pathname);
+
+  if (authLoading) {
+    return <Preloader />;
+  }
 
   if (isAuth) {
     return <>{children}</>;
